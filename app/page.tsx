@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Gemini from "./Componets/Geminis";
+
 import Nav from "./Componets/Nav";
 import MyMap from "./Componets/Mapa";
 import ControlledMapExample from "./Componets/mp";
