@@ -9,7 +9,7 @@ import {
     MarkerLabel,
     type MapViewport
 } from "@/components/ui/map";
-import { Loader2, Clock, Route as RouteIcon, Waypoints, Navigation, Bus, LocateFixed } from "lucide-react";
+import { Loader2, Clock, Route as RouteIcon, Waypoints, Navigation, Bus, LocateFixed, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { getOsrmRouteConfig } from "@/app/actions";
@@ -74,6 +74,7 @@ const formatDistance = (m: number) =>
 export default function MyMap() {
     const [activeRouteId, setActiveRouteId] = useState(AVAILABLE_ROUTES[0].id);
     const activeRouteConfig = AVAILABLE_ROUTES.find(r => r.id === activeRouteId) || AVAILABLE_ROUTES[0];
+    const [isRoutesOpen, setIsRoutesOpen] = useState(false);
 
     // Ahora guardamos la ruta de OSRM directamente (como un solo objeto)
     const [routeData, setRouteData] = useState<RouteData | null>(null);
@@ -314,45 +315,67 @@ export default function MyMap() {
             </div>
 
             {/* LISTA DE RUTAS (Botones Flotantes) */}
-            <div className="absolute top-24 left-6 z-30 flex flex-col gap-3">
-                <h3 className="text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ml-1 flex items-center gap-2">
-                    <Navigation className="size-3" /> Rutas Disponibles
-                </h3>
-                {AVAILABLE_ROUTES.map((configRoute) => {
-                    const isActive = configRoute.id === activeRouteId;
-                    return (
-                        <Button
-                            key={configRoute.id}
-                            variant={isActive ? "default" : "outline"}
-                            onClick={() => setActiveRouteId(configRoute.id)}
-                            className={`group justify-start gap-4 h-max px-4 py-3 rounded-xl transition-all duration-300 ${isActive
-                                ? "bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-500/20 w-64"
-                                : "bg-black/20 border-white/10 backdrop-blur-md hover:bg-white/5 w-56"
-                                }`}
-                        >
-                            <div className={`p-2 rounded-lg ${isActive ? "bg-white/20" : "bg-white/5"}`}>
-                                <Waypoints className={`size-4 ${isActive ? "text-white" : "text-gray-400"}`} />
-                            </div>
-                            <div className="flex gap-4 items-center flex-1">
-                                <span className={`text-[16px] uppercase font-bold ${isActive ? "text-indigo-50" : "text-gray-300"}`}>
-                                    {configRoute.name}
-                                </span>
+            <div className="absolute top-24 left-6 z-30 flex flex-col gap-3 w-64">
+                <button
+                    onClick={() => setIsRoutesOpen(!isRoutesOpen)}
+                    className="flex items-center justify-between w-full bg-black/60 backdrop-blur-xl border border-white/10 px-4 py-3 rounded-2xl hover:bg-white/10 transition-all shadow-lg group"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
+                            <Navigation className="size-4 text-indigo-400" />
+                        </div>
+                        <div className="flex flex-col items-start hidden sm:flex">
+                            <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Ruta Actual</span>
+                            <span className="text-sm font-bold text-white tracking-wide">{activeRouteConfig.name}</span>
+                        </div>
+                    </div>
+                    {isRoutesOpen ? (
+                        <ChevronUp className="size-5 text-indigo-400" />
+                    ) : (
+                        <ChevronDown className="size-5 text-white/50" />
+                    )}
+                </button>
 
-                                {/* Mostrar la data sólo si es la ruta activa y los datos cargaron */}
-                                {isActive && routeData && (
-                                    <div className="flex flex-col justify-end items-end flex-1 ">
-                                        <span className="text-sm font-bold text-indigo-100">
-                                            {formatDuration(routeData.duration)}
-                                        </span>
-                                        <span className="text-[10px] opacity-60 flex items-center gap-1 text-indigo-200">
-                                            <RouteIcon className="size-2.5" /> {formatDistance(routeData.distance)}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </Button>
-                    );
-                })}
+                <div className={`flex flex-col gap-3 transition-all duration-500 overflow-hidden ${isRoutesOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
+                    {AVAILABLE_ROUTES.map((configRoute) => {
+                        const isActive = configRoute.id === activeRouteId;
+                        return (
+                            <Button
+                                key={configRoute.id}
+                                variant={isActive ? "default" : "outline"}
+                                onClick={() => {
+                                    setActiveRouteId(configRoute.id);
+                                    setIsRoutesOpen(false);
+                                }}
+                                className={`group justify-start gap-4 h-max px-4 py-3 rounded-xl transition-all duration-300 w-full ${isActive
+                                    ? "bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-500/20"
+                                    : "bg-black/40 border-white/10 backdrop-blur-md hover:bg-white/10"
+                                    }`}
+                            >
+                                <div className={`p-2 rounded-lg ${isActive ? "bg-white/20" : "bg-white/5"}`}>
+                                    <Waypoints className={`size-4 ${isActive ? "text-white" : "text-gray-400"}`} />
+                                </div>
+                                <div className="flex gap-4 items-center flex-1">
+                                    <span className={`text-[16px] uppercase font-bold ${isActive ? "text-indigo-50" : "text-gray-300"}`}>
+                                        {configRoute.name}
+                                    </span>
+
+                                    {/* Mostrar la data sólo si es la ruta activa y los datos cargaron */}
+                                    {isActive && routeData && (
+                                        <div className="flex flex-col justify-end items-end flex-1 ">
+                                            <span className="text-sm font-bold text-indigo-100">
+                                                {formatDuration(routeData.duration)}
+                                            </span>
+                                            <span className="text-[10px] opacity-60 flex items-center gap-1 text-indigo-200">
+                                                <RouteIcon className="size-2.5" /> {formatDistance(routeData.distance)}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </Button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* LOADER */}
