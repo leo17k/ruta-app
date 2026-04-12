@@ -89,7 +89,7 @@ export default function MyMap() {
 
     // Ahora guardamos la ruta de OSRM directamente (como un solo objeto)
     const [routeData, setRouteData] = useState<RouteData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Estado para el bus simulado
     const [busPosition, setBusPosition] = useState<[number, number] | null>(null);
@@ -121,16 +121,16 @@ export default function MyMap() {
             setIsLoading(true);
             try {
                 const rutaGuardada = rutasData.find(r => r.nombre === activeRouteConfig.name);
-                
+
                 if (rutaGuardada && rutaGuardada.routes && rutaGuardada.routes.length > 0) {
-                     const osrmRoute = rutaGuardada.routes[0];
-                     setRouteData({
-                         coordinates: osrmRoute.geometry.coordinates,
-                         duration: osrmRoute.duration,
-                         distance: osrmRoute.distance,
-                     });
-                     if (isMounted) setIsLoading(false);
-                     return;
+                    const osrmRoute = rutaGuardada.routes[0];
+                    setRouteData({
+                        coordinates: osrmRoute.geometry.coordinates,
+                        duration: osrmRoute.duration,
+                        distance: osrmRoute.distance,
+                    });
+                    if (isMounted) setIsLoading(false);
+                    return;
                 }
 
                 const waypointsStr = activeRouteConfig.waypoints

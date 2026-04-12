@@ -4,7 +4,7 @@ import { getOsrmRouteConfig, saveRouteToJson } from "@/app/actions";
 import { Loader2, Plus, Route as RouteIcon, Save, Trash2, MapPin, MousePointerClick, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Nav from "../Componets/Nav";
-import { Map, MapMarker, MarkerContent } from "@/components/ui/map";
+import { Map, MapMarker, MarkerContent, MapRoute } from "@/components/ui/map";
 import { useMap } from "@/components/ui/map";
 import { useState, useEffect } from "react";
 
@@ -41,8 +41,10 @@ export default function CrearRutaPage() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState("");
+    const [previewData, setPreviewData] = useState<any>(null);
 
     const handleMapClick = (lng: string, lat: string) => {
+        setPreviewData(null);
         if (clickMode === "start") {
             setStartLng(lng);
             setStartLat(lat);
@@ -62,16 +64,18 @@ export default function CrearRutaPage() {
     };
 
     const updateWaypoint = (id: number, key: string, value: string) => {
+        setPreviewData(null);
         setWaypoints(waypoints.map(wp => wp.id === id ? { ...wp, [key]: value } : wp));
     };
 
     const removeWaypoint = (id: number) => {
+        setPreviewData(null);
         setWaypoints(waypoints.filter(wp => wp.id !== id));
     };
 
-    const handleSave = async () => {
-        if (!name || !startLng || !startLat || !endLng || !endLat) {
-            setMessage("Por favor llena los campos requeridos (Nombre, Inicio y Fin).");
+    const handlePreview = async () => {
+        if (!startLng || !startLat || !endLng || !endLat) {
+            setMessage("Por favor define el Origen y Destino en el mapa primero.");
             return;
         }
 
@@ -95,11 +99,29 @@ export default function CrearRutaPage() {
 
             if (!osrmData || !osrmData.routes || osrmData.routes.length === 0) {
                 setMessage("❌ OSRM no pudo calcular esta ruta. Verifica las coordenadas.");
-                setIsLoading(false);
+                setPreviewData(null);
                 return;
             }
 
-            // Route Config
+            setPreviewData(osrmData);
+            setMessage("👀 Ruta previsualizada. Ajusta posiciones o Nombre, y guarda la ruta.");
+        } catch (error) {
+            console.error(error);
+            setMessage("❌ Error al procesar ruta.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!name || !previewData) {
+            setMessage("Por favor asigna un Nombre y asegúrate de Previsualizar la ruta antes de guardarla.");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
             const routeConfig = {
                 id: name.toLowerCase().replace(/\s+/g, '-'),
                 name: name,
@@ -115,8 +137,8 @@ export default function CrearRutaPage() {
                     }))
             };
 
-            const result = await saveRouteToJson(routeConfig, osrmData);
-
+            const result = await saveRouteToJson(routeConfig, previewData);
+            
             if (result.success) {
                 setMessage("✅ Ruta guardada exitosamente.");
                 // Reset form
@@ -124,8 +146,8 @@ export default function CrearRutaPage() {
                 setStartName(""); setStartLng(""); setStartLat("");
                 setEndName(""); setEndLng(""); setEndLat("");
                 setWaypoints([]);
+                setPreviewData(null);
             }
-
         } catch (error) {
             console.error(error);
             setMessage("❌ Error al guardar la ruta.");
@@ -260,16 +282,28 @@ export default function CrearRutaPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="pt-6 border-t border-white/10">
-                            <Button
-                                onClick={handleSave}
+                        <div className="pt-6 border-t border-white/10 flex gap-4">
+                            <Button 
+                                onClick={handlePreview} 
                                 disabled={isLoading}
-                                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-6 rounded-xl font-bold shadow-lg shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-95 text-lg"
+                                className="flex-1 bg-white/10 hover:bg-white/20 text-white px-2 py-6 rounded-xl font-bold transition-all text-sm sm:text-base border border-white/10"
                             >
-                                {isLoading ? (
-                                    <><Loader2 className="size-5 mr-3 animate-spin" /> Procesando...</>
+                                {isLoading && !previewData ? (
+                                    <Loader2 className="size-5 mr-2 animate-spin" />
                                 ) : (
-                                    <><Save className="size-5 mr-3" /> Guardar y Calcular</>
+                                    <><RouteIcon className="size-5 mr-2" /> Previsualizar</>
+                                )}
+                            </Button>
+                            
+                            <Button 
+                                onClick={handleSave} 
+                                disabled={isLoading || !previewData || !name}
+                                className="flex-[1.5] bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-6 rounded-xl font-bold shadow-lg shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-95 text-sm sm:text-base disabled:opacity-50 disabled:hover:scale-100"
+                            >
+                                {isLoading && previewData ? (
+                                    <><Loader2 className="size-5 mr-2 animate-spin" /> Guardando...</>
+                                ) : (
+                                    <><Save className="size-5 mr-2" /> Guardar Ruta</>
                                 )}
                             </Button>
                         </div>
@@ -280,11 +314,30 @@ export default function CrearRutaPage() {
                         <Map viewport={{ center: [-63.5525, 8.0626], zoom: 12 }}>
                             <MapClickHandler onMapClick={handleMapClick} />
 
+                            {/* Ruta dibujada (Preview) */}
+                            {previewData && previewData.routes && previewData.routes.length > 0 && (
+                                <MapRoute
+                                    coordinates={previewData.routes[0].geometry.coordinates}
+                                    color="#6366f1"
+                                    width={4}
+                                    opacity={0.8}
+                                />
+                            )}
+
                             {/* Marker Inicio */}
                             {startLng && startLat && (
-                                <MapMarker longitude={parseFloat(startLng)} latitude={parseFloat(startLat)}>
+                                <MapMarker
+                                    longitude={parseFloat(startLng)}
+                                    latitude={parseFloat(startLat)}
+                                    draggable={true}
+                                    onDragEnd={({ lng, lat }) => {
+                                        setStartLng(lng.toFixed(5));
+                                        setStartLat(lat.toFixed(5));
+                                        setPreviewData(null);
+                                    }}
+                                >
                                     <MarkerContent>
-                                        <div className="size-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-lg shadow-emerald-500/50">
+                                        <div className="size-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-lg shadow-emerald-500/50 cursor-grab active:cursor-grabbing">
                                             <div className="size-1 bg-white rounded-full" />
                                         </div>
                                     </MarkerContent>
@@ -293,9 +346,18 @@ export default function CrearRutaPage() {
 
                             {/* Marker Fin */}
                             {endLng && endLat && (
-                                <MapMarker longitude={parseFloat(endLng)} latitude={parseFloat(endLat)}>
+                                <MapMarker
+                                    longitude={parseFloat(endLng)}
+                                    latitude={parseFloat(endLat)}
+                                    draggable={true}
+                                    onDragEnd={({ lng, lat }) => {
+                                        setEndLng(lng.toFixed(5));
+                                        setEndLat(lat.toFixed(5));
+                                        setPreviewData(null);
+                                    }}
+                                >
                                     <MarkerContent>
-                                        <div className="size-5 rounded-full bg-rose-500 border-2 border-white flex items-center justify-center shadow-lg shadow-rose-500/50">
+                                        <div className="size-5 rounded-full bg-rose-500 border-2 border-white flex items-center justify-center shadow-lg shadow-rose-500/50 cursor-grab active:cursor-grabbing">
                                             <div className="size-1 bg-white rounded-full" />
                                         </div>
                                     </MarkerContent>
@@ -305,9 +367,18 @@ export default function CrearRutaPage() {
                             {/* Markers Waypoints */}
                             {waypoints.map((wp, i) => (
                                 wp.lng && wp.lat ? (
-                                    <MapMarker key={wp.id} longitude={parseFloat(wp.lng)} latitude={parseFloat(wp.lat)}>
+                                    <MapMarker
+                                        key={wp.id}
+                                        longitude={parseFloat(wp.lng)}
+                                        latitude={parseFloat(wp.lat)}
+                                        draggable={true}
+                                        onDragEnd={({ lng, lat }) => {
+                                            updateWaypoint(wp.id, "lng", lng.toFixed(5));
+                                            updateWaypoint(wp.id, "lat", lat.toFixed(5));
+                                        }}
+                                    >
                                         <MarkerContent>
-                                            <div className="size-5 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center shadow-lg shadow-indigo-500/50 text-[10px] font-bold">
+                                            <div className="size-5 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center shadow-lg shadow-indigo-500/50 text-[10px] font-bold cursor-grab active:cursor-grabbing">
                                                 {i + 1}
                                             </div>
                                         </MarkerContent>
