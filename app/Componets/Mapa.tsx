@@ -307,17 +307,17 @@ export default function MyMap() {
             </Map>
 
             {/* BOTÓN PARA MI UBICACIÓN */}
-            <div className="absolute bottom-10 right-6 z-30">
+            <div className="absolute bottom-10 right-6 z-30 max-sm:bottom-20">
                 <Button
                     onClick={handleLocateMe}
                     disabled={isLocating}
                     variant="outline"
-                    className="size-14 rounded-full bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-400/50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/30"
+                    className="size-14 max-sm:size-10 rounded-full bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-400/50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/30"
                 >
                     {isLocating ? (
-                        <Loader2 className="size-6 text-white animate-spin" />
+                        <Loader2 className="size-6 max-sm:size-4 text-white animate-spin" />
                     ) : (
-                        <LocateFixed className="size-6 text-white" />
+                        <LocateFixed className="size-6 max-sm:size-4 text-white" />
                     )}
                 </Button>
             </div>
