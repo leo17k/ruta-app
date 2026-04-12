@@ -259,13 +259,15 @@ export default function MyMap() {
                 )}
 
                 {/* Marcadores de Control Dinámicos */}
-                {activeRouteConfig.waypoints.map((point) => (
-                    <MapMarker key={point.id} longitude={point.lng} latitude={point.lat}>
-                        <MarkerContent>
-                            <div className="size-2.5 rounded-full bg-white/20 border border-white/40 backdrop-blur-sm" />
-                        </MarkerContent>
-                    </MapMarker>
-                ))}
+                {activeRouteConfig.waypoints.map((point: any) => {
+                    return (
+                        <MapMarker key={point.id} longitude={point.lng} latitude={point.lat}>
+                            <MarkerContent>
+                                <div className="size-2.5 rounded-full bg-white/20 border border-white/40 backdrop-blur-sm" />
+                            </MarkerContent>
+                        </MapMarker>
+                    );
+                })}
 
                 {/* Inicio y Fin Dinámicos */}
                 <MapMarker longitude={activeRouteConfig.start.lng} latitude={activeRouteConfig.start.lat}>
