@@ -307,19 +307,8 @@ export default function MyMap() {
             </Map>
 
             {/* BOTÓN PARA MI UBICACIÓN */}
-            <div className="absolute bottom-10 right-6 z-30 max-sm:bottom-20">
-                <Button
-                    onClick={handleLocateMe}
-                    disabled={isLocating}
-                    variant="outline"
-                    className="size-14 max-sm:size-10 rounded-full bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-400/50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/30"
-                >
-                    {isLocating ? (
-                        <Loader2 className="size-6 max-sm:size-4 text-white animate-spin" />
-                    ) : (
-                        <LocateFixed className="size-6 max-sm:size-4 text-white" />
-                    )}
-                </Button>
+            <div className="absolute bottom-10 right-6 z-30 max-sm:bottom-30">
+
             </div>
 
             {/* PANEL DE INFORMACIÓN DE COORDENADAS (HUD) */}
@@ -338,13 +327,25 @@ export default function MyMap() {
                     <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-widest">Zoom</span>
                     <span className="text-white font-mono text-sm">{viewport.zoom.toFixed(1)}</span>
                 </div>
+                <Button
+                    onClick={handleLocateMe}
+                    disabled={isLocating}
+                    variant="outline"
+                    className="size-10 max-sm:size-10 rounded-full bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-400/50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/30"
+                >
+                    {isLocating ? (
+                        <Loader2 className="size-4 max-sm:size-4 text-white animate-spin" />
+                    ) : (
+                        <LocateFixed className="size-4 max-sm:size-4 text-white" />
+                    )}
+                </Button>
             </div>
 
             {/* LISTA DE RUTAS (Botones Flotantes) */}
-            <div className="absolute top-24 left-6 z-30 flex flex-col gap-3 w-64">
+            <div className="absolute top-24 max-sm:top-17 left-0 px-6 z-30 flex flex-col gap-3 w-64 max-sm:w-dvw">
                 <button
                     onClick={() => setIsRoutesOpen(!isRoutesOpen)}
-                    className="flex items-center justify-between w-full bg-black/60 backdrop-blur-xl border border-white/10 px-4 py-3 rounded-2xl hover:bg-white/10 transition-all shadow-lg group max-sm:w-[90dvw]"
+                    className="flex items-center justify-between w-full bg-black/60 backdrop-blur-xl border border-white/10 px-4 py-3 rounded-2xl hover:bg-white/10 transition-all shadow-lg group "
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
