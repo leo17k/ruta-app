@@ -350,7 +350,7 @@ export default function MyMap() {
                         <div className="p-2 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
                             <Navigation className="size-4 text-indigo-400" />
                         </div>
-                        <div className="flex flex-col items-start hidden sm:flex">
+                        <div className="flex flex-col items-start">
                             <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Ruta Actual</span>
                             <span className="text-sm font-bold text-white tracking-wide">{activeRouteConfig.name}</span>
                         </div>
