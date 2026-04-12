@@ -246,7 +246,7 @@ export default function MyMap() {
     };
 
     return (
-        <div className="h-screen w-full relative bg-[#0a0a0a] overflow-hidden">
+        <div className="h-dvh w-full relative bg-[#0a0a0a] overflow-hidden">
             <Map viewport={viewport} onViewportChange={setViewport}>
                 {/* Dibujar la línea de la ruta */}
                 {routeData && (
@@ -344,7 +344,7 @@ export default function MyMap() {
             <div className="absolute top-24 left-6 z-30 flex flex-col gap-3 w-64">
                 <button
                     onClick={() => setIsRoutesOpen(!isRoutesOpen)}
-                    className="flex items-center justify-between w-full bg-black/60 backdrop-blur-xl border border-white/10 px-4 py-3 rounded-2xl hover:bg-white/10 transition-all shadow-lg group"
+                    className="flex items-center justify-between w-full bg-black/60 backdrop-blur-xl border border-white/10 px-4 py-3 rounded-2xl hover:bg-white/10 transition-all shadow-lg group max-sm:w-[90dvw]"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
