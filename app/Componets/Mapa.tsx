@@ -13,10 +13,13 @@ import { Loader2, Clock, Route as RouteIcon, Waypoints, Navigation, Bus, LocateF
 import { Button } from "@/components/ui/button";
 
 import { getOsrmRouteConfig } from "@/app/actions";
+import rutasDataRaw from "@/app/Rutas.json";
+
+const rutasData = rutasDataRaw as any[];
 
 // --- CONFIGURACIÓN DE RUTAS ---
 // Aquí puedes agregar todas las rutas que necesites.
-const AVAILABLE_ROUTES = [
+const BASE_ROUTES = [
     {
         id: "pepsi",
         name: "Pepsi",
@@ -57,6 +60,14 @@ const AVAILABLE_ROUTES = [
     }
 ];
 
+// Combinamos las hardcodeadas con las guardadas en el JSON
+const AVAILABLE_ROUTES = [
+    ...BASE_ROUTES,
+    ...rutasData
+        .filter(r => r.config && !BASE_ROUTES.some(br => br.id === r.config.id || br.name === r.nombre))
+        .map(r => r.config)
+];
+
 interface RouteData {
     coordinates: [number, number][];
     duration: number;
@@ -79,10 +90,10 @@ export default function MyMap() {
     // Ahora guardamos la ruta de OSRM directamente (como un solo objeto)
     const [routeData, setRouteData] = useState<RouteData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    
+
     // Estado para el bus simulado
     const [busPosition, setBusPosition] = useState<[number, number] | null>(null);
-    
+
     // Estado para la ubicación del usuario
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [isLocating, setIsLocating] = useState(false);
@@ -109,8 +120,21 @@ export default function MyMap() {
         async function fetchRouteData() {
             setIsLoading(true);
             try {
+                const rutaGuardada = rutasData.find(r => r.nombre === activeRouteConfig.name);
+                
+                if (rutaGuardada && rutaGuardada.routes && rutaGuardada.routes.length > 0) {
+                     const osrmRoute = rutaGuardada.routes[0];
+                     setRouteData({
+                         coordinates: osrmRoute.geometry.coordinates,
+                         duration: osrmRoute.duration,
+                         distance: osrmRoute.distance,
+                     });
+                     if (isMounted) setIsLoading(false);
+                     return;
+                }
+
                 const waypointsStr = activeRouteConfig.waypoints
-                    .map(p => `${p.lng},${p.lat}`)
+                    .map((p: any) => `${p.lng},${p.lat}`)
                     .join(";");
 
                 // El celular o PC ya no le habla directo a OSRM.
@@ -142,7 +166,7 @@ export default function MyMap() {
                 if (isMounted) setIsLoading(false);
             }
         }
-        
+
         fetchRouteData();
 
         return () => {
@@ -161,7 +185,7 @@ export default function MyMap() {
         setBusPosition(routeData.coordinates[currentIndex]);
 
         // Computamos la velocidad (milisegundos por punto) basada en los puntos que tiene la ruta
-        const speed = Math.max(50, Math.min(200, 15000 / routeData.coordinates.length)); 
+        const speed = Math.max(50, Math.min(200, 15000 / routeData.coordinates.length));
 
         const moveBus = setInterval(() => {
             currentIndex++;
@@ -210,10 +234,10 @@ export default function MyMap() {
                     console.warn(`GPS falló o dio timeout (${error.message}). Usando simulación de Ciudad Bolívar...`);
                     fallbackToMockLocation();
                 },
-                { 
-                    enableHighAccuracy: false, 
-                    timeout: 4000, 
-                    maximumAge: 0 
+                {
+                    enableHighAccuracy: false,
+                    timeout: 4000,
+                    maximumAge: 0
                 }
             );
         } else {
@@ -256,7 +280,7 @@ export default function MyMap() {
                     </MarkerContent>
                 </MapMarker>
 
-                {/* Marcador de Bus Simulado */}
+                {/* Marcador de Bus Simulado
                 {busPosition && (
                     <MapMarker longitude={busPosition[0]} latitude={busPosition[1]}>
                         <MarkerContent>
@@ -265,7 +289,7 @@ export default function MyMap() {
                             </div>
                         </MarkerContent>
                     </MapMarker>
-                )}
+                )} */}
 
                 {/* Marcador de Usuario (Mi Ubicación) */}
                 {userLocation && (

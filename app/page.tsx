@@ -2,7 +2,7 @@ import Image from "next/image";
 
 import Nav from "./Componets/Nav";
 import MyMap from "./Componets/Mapa";
-import ControlledMapExample from "./Componets/mp";
+import { OsrmRouteExample } from "./Componets/mp";
 export default function Home() {
   return (
     <div className="min-h-screen w-full relative bg-black">
